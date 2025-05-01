@@ -1,28 +1,20 @@
-import React from "react";
+import React from 'react';
+import Todo from './Todo';
+// Ensure CSS is imported (likely already in main.jsx or here)
+// import '../../styles/glassmorphism.css'; // Or wherever it's imported
 
-//include images into your bundle
-import rigoImage from "../../img/rigo-baby.jpg";
-
-//create your first component
 const Home = () => {
-	return (
-		<div className="text-center">
-            
-
-			<h1 className="text-center mt-5">Hello Rigo!</h1>
-			<p>
-				<img src={rigoImage} />
-			</p>
-			<a href="#" className="btn btn-success">
-				If you see this green button... bootstrap is working...
-			</a>
-			<p>
-				Made by{" "}
-				<a href="http://www.4geeksacademy.com">4Geeks Academy</a>, with
-				love!
-			</p>
-		</div>
-	);
+  return (
+    <div className="container mx-auto p-4 flex justify-center items-start min-h-screen">
+      <div className="w-full max-w-2xl mt-10">
+        {/* Apply the new contrast class */}
+        <h1 className="text-3xl font-bold mb-8 text-center animated-gradient-text-contrast">
+          Todo App
+        </h1>
+        <Todo />
+      </div>
+    </div>
+  );
 };
 
 export default Home;
