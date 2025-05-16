@@ -1,82 +1,61 @@
 import React, { useState } from 'react';
 
-// Receive apiBaseUrl and username
+// Helper to format API errors (can be imported from a utility file if used in multiple places)
+const formatApiError = async (response, defaultMessage) => {
+    // ... (same as in TodoBody.jsx, or import if extracted)
+    let errorDetail = defaultMessage || `HTTP error! status: ${response.status}`;
+    try {
+        const errorData = await response.json();
+        if (errorData.detail) {
+            errorDetail += ` - ${errorData.detail}`;
+        } else if (errorData.label && Array.isArray(errorData.label)) {
+            errorDetail += ` - Label: ${errorData.label.join(', ')}`;
+        } else if (errorData.msg) {
+            errorDetail += ` - ${errorData.msg}`;
+        } else {
+            errorDetail += ` - ${JSON.stringify(errorData)}`;
+        }
+    } catch (e) {
+        errorDetail += ` (Could not parse error body as JSON)`;
+    }
+    return errorDetail;
+};
+
+
 const TodoHeader = ({ setTodos, apiBaseUrl, username }) => {
     const [newTodoLabel, setNewTodoLabel] = useState("");
-    const [isAdding, setIsAdding] = useState(false); // State to disable button while adding
+    const [isAdding, setIsAdding] = useState(false);
 
     const addTask = async () => {
         const trimmedLabel = newTodoLabel.trim();
         if (!trimmedLabel || isAdding) {
             if (!trimmedLabel) alert("Please enter a task label.");
-            return; // Prevent adding empty/duplicate adds
+            return;
         }
 
-        setIsAdding(true); // Disable button
-
-        // Prepare new task object matching API structure
-        const newTaskPayload = {
-            label: trimmedLabel,
-            is_done: false // Default for new tasks
-        };
-
-//      const addTask = () => {
-//      const newTodoObj = {
-//      label: newTodo
-//      No more need for counter.
-//     const appendArray = [...todos, newTodoObj];
-//  }
-//     setNewTodo("");
-//    step 4. create a new function to fetch a POST
-//  postNewTask(newTodoObj);
-// }
-// const postNewTask = async (todoObject) => {. 
-//      const response = await fetch(). // fetch needs2 arguments for a POST (URL, {options})
-//      cosnt response = await fetch("https://playground.4geeks.com/todo/todos/JandryFernandez", {
-//      method: "POST", 
-//      headers: {
-//          'content-type': 'application/json'      
-//      },
-//      body: JSON.stringify(todoObject)
-//  });
-//  if (response.ok) {
-//      const data = await response.json();
-//      setTodos(data.todos);
-//      return data;
-//          error: {
-//              stastus: response.status,
-//              statusText: response.statusText
-//  }
-// }
-//}
-//  return ()
+        setIsAdding(true);
+        const newTaskPayload = { label: trimmedLabel, is_done: false };
 
         try {
-            // --- Backend Update ---
             const response = await fetch(`${apiBaseUrl}/todos/${username}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newTaskPayload),
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP error adding todo! status: ${response.status} ${await response.text()}`);
+                throw new Error(await formatApiError(response, `Failed to add task`));
             }
 
-            const addedTodo = await response.json(); // Get the full todo object from API (with ID)
+            const addedTodo = await response.json();
             console.log('Todo added successfully on server:', addedTodo);
-
-            // --- Frontend Update (Only after successful API add) ---
-            setTodos(prevTodos => [...prevTodos, addedTodo]); // Add the new todo from API response
-            setNewTodoLabel(""); // Clear input
-
+            setTodos(prevTodos => [...prevTodos, addedTodo]);
+            setNewTodoLabel("");
         } catch (error) {
             console.error('Error adding todo:', error);
-            alert(`Failed to add task: ${error.message}`); // Inform user
+            alert(error.message);
         } finally {
-            setIsAdding(false); // Re-enable button
+            setIsAdding(false);
         }
     };
 
@@ -95,12 +74,12 @@ const TodoHeader = ({ setTodos, apiBaseUrl, username }) => {
                 value={newTodoLabel}
                 onChange={(e) => setNewTodoLabel(e.target.value)}
                 onKeyPress={handleKeyPress}
-                disabled={isAdding} // Disable input while adding
+                disabled={isAdding}
             />
             <button
-                className="add-task btn btn-primary shrink-0"
+                className="add-task btn btn-primary shrink-0" // Assuming btn, btn-primary, shrink-0 are styled
                 onClick={addTask}
-                disabled={isAdding} // Disable button while adding
+                disabled={isAdding}
             >
                 {isAdding ? 'Adding...' : 'Add Task'}
             </button>
