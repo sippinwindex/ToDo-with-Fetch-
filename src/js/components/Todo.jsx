@@ -4,26 +4,37 @@ import TodoBody from "./TodoBody";
 import TodoFooter from "./TodoFooter";
 
 const API_BASE_URL = 'https://playground.4geeks.com/todo';
-const USERNAME = 'JandryFernandez'; // *** IMPORTANT: Replace with your username ***
+const USERNAME = 'JandryFernandez'; // *** Ensure this is your unique username for the API ***
 
-// Helper to format API errors (can be imported from a utility file if used in multiple places)
-const formatApiErrorText = async (response, defaultMessage) => {
-    // This version is for when you expect text and then try to parse
+// Standardized helper to format API errors
+const formatApiError = async (response, defaultMessage) => {
     let errorDetail = defaultMessage || `HTTP error! status: ${response.status}`;
-    const errorText = await response.text(); // Get text once
+    const errorText = await response.text(); // Get raw error text first
     try {
-        const errorData = JSON.parse(errorText); // Try to parse
+        const errorData = JSON.parse(errorText); // Try to parse as JSON
         if (errorData.detail) {
             errorDetail += ` - ${errorData.detail}`;
-        } else if (errorData.label && Array.isArray(errorData.label)) {
+        } else if (errorData.label && Array.isArray(errorData.label)) { // Specific check for certain API error formats
             errorDetail += ` - Label: ${errorData.label.join(', ')}`;
         } else if (errorData.msg) {
             errorDetail += ` - ${errorData.msg}`;
         } else {
-            errorDetail += ` - ${errorText}`; // Fallback to raw text if specific fields not found
+            // If JSON parsed but no known fields, append the raw text if it's not already the detail
+            // This handles cases where errorText might be a simple string like "Not found."
+            // or a JSON object without 'detail', 'label', or 'msg'.
+            if (errorDetail.endsWith(response.status.toString())) { // Avoid duplicating status if defaultMessage was used
+                 errorDetail += ` - ${errorText}`;
+            } else if (!errorDetail.includes(errorText)) { // Avoid duplicating raw text
+                 errorDetail += ` - ${errorText}`;
+            }
         }
     } catch (e) {
-        errorDetail += ` - ${errorText}`; // If parsing error body as JSON fails, use raw text
+        // If parsing error body as JSON fails, use the raw text
+        if (errorDetail.endsWith(response.status.toString())) {
+            errorDetail += ` - ${errorText}`;
+        } else if (!errorDetail.includes(errorText)) {
+            errorDetail += ` - ${errorText}`;
+        }
     }
     return errorDetail;
 };
@@ -44,16 +55,18 @@ const Todo = () => {
           const createUserResponse = await fetch(`${API_BASE_URL}/users/${USERNAME}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({})
+            body: JSON.stringify({}) // API expects an empty body or specific fields if creating user with details
           });
           if (!createUserResponse.ok) {
-            throw new Error(await formatApiErrorText(createUserResponse, `Failed to create user ${USERNAME}`));
+            // Use the standardized formatApiError
+            throw new Error(await formatApiError(createUserResponse, `Failed to create user ${USERNAME}`));
           }
-          const creationResult = await createUserResponse.json(); // Should be { msg: "..." }
-          console.log(`User ${USERNAME} process result:`, creationResult.msg || "User created/accessed.");
+          const creationResult = await createUserResponse.json();
+          console.log(`User ${USERNAME} creation/access result:`, creationResult.msg || "User processed.");
           setTodos([]); // New user starts with empty todos
         } else if (!userResponse.ok) {
-          throw new Error(await formatApiErrorText(userResponse, `HTTP error fetching user/todos!`));
+          // Use the standardized formatApiError
+          throw new Error(await formatApiError(userResponse, `HTTP error fetching user/todos!`));
         } else {
           const data = await userResponse.json();
           setTodos(Array.isArray(data.todos) ? data.todos : []);
@@ -61,22 +74,24 @@ const Todo = () => {
         }
       } catch (error) {
         console.error('Error in fetchOrCreateUser:', error);
-        alert(error.message); // Show detailed error to user
+        alert(error.message);
         setTodos([]);
       } finally {
         setIsLoading(false);
       }
     };
     
-    if (USERNAME && USERNAME.trim() !== '' && USERNAME.toUpperCase() !== 'YOUR_USERNAME_HERE' && USERNAME !== 'JandryFernandez_test') { // Added better default check
+    // Keep your username validation logic as is, or simplify if 'JandryFernandez_test' is no longer relevant
+    if (USERNAME && USERNAME.trim() !== '' && USERNAME.toUpperCase() !== 'YOUR_USERNAME_HERE' && USERNAME !== 'JandryFernandez_test') {
         fetchOrCreateUser();
     } else {
-        console.error("Default username is being used or username is invalid. Please set a unique USERNAME in Todo.jsx");
-        alert("TODO APP: Please configure a unique username in the source code (Todo.jsx) to save your tasks.");
+        const msg = `TODO APP: Invalid or placeholder username ('${USERNAME}'). Please set a unique USERNAME in Todo.jsx to save your tasks.`;
+        console.error(msg);
+        alert(msg);
         setTodos([]);
         setIsLoading(false);
     }
-  }, [USERNAME]); // USERNAME is a const, so [] is fine, but this is more explicit if it could change
+  }, []); // USERNAME is a const, so [] is fine. If USERNAME could change via props/state, include it.
 
   const getFilteredTodos = () => {
     if (isLoading) return [];
@@ -107,7 +122,7 @@ const Todo = () => {
         username={USERNAME}
       />
       <TodoFooter
-        todos={todos}
+        todos={todos} // Footer needs all todos for counts, not just filtered ones
         setTodos={setTodos}
         filter={filter}
         setFilter={setFilter}

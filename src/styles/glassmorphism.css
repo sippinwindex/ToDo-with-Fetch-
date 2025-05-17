@@ -1,463 +1,5 @@
 /* === Base Variables === */
 :root {
-    /* Core variables */
-    --blur-amount: 10px;
-    --border-radius-main: 18px;
-    --border-radius-item: 10px;
-    --transition-speed: 0.3s;
-
-    /* Glass & Colors */
-    --glass-bg: rgba(20, 20, 40, 0.2); /* Slightly darker, purplish tint for retro glass */
-    --glass-bg-light: rgba(40, 40, 60, 0.3);
-    --glass-border-color: rgba(120, 120, 220, 0.35); /* More vibrant border */
-    --glass-highlight-border: rgba(150, 150, 250, 0.5);
-
-    /* Background Gradient */
-    --primary-gradient: linear-gradient(135deg, #ff6b6b, #4ecdc4, #f7931a, #a06bff); /* Added orange */
-    --gradient-size: 400%;
-
-    /* Text */
-    --text-color-body: #e0e0e0; /* Off-white for main body text, less stark than pure white */
-    --text-color-heading-retro: #00ffcc; /* Neon teal for main heading */
-    --text-color-accent: #ffffff; /* White for text on glass */
-    --text-color-accent-rgb: 255, 255, 255; /* For RGBA glow */
-    --text-color-muted: #9a9aef; /* Muted retro purple/blue */
-
-    --delete-color: #ff55a3; /* Neon Pink */
-    --delete-color-hover: #ff007f; /* Brighter Neon Pink */
-    --edit-icon-color: #00f2ff; /* Neon Cyan */
-    --edit-icon-color-hover: #61fbff; /* Lighter Neon Cyan */
-
-
-    /* Shadows */
-    --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.2);
-    --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.25);
-    --shadow-heavy: 0 12px 40px rgba(0, 0, 0, 0.3);
-
-    /* Font - Using 'VT323' for headings, 'Roboto Mono' for body/ui */
-    --font-family-retro-heading: 'VT323', monospace;
-    --font-family-retro-body: 'Roboto Mono', monospace;
-    --font-family-fallback: 'Poppins', sans-serif; /* Keep Poppins as ultimate fallback */
-
-    /* Retro Scanlines */
-    --scanline-bg: rgba(20, 0, 30, 0.1); /* Dark, slightly colored scanlines */
-    --scanline-line-color: rgba(0, 0, 0, 0.25);
-    --scanline-opacity: 0.6;
-    --glow-color-interactive: rgba(0, 200, 255, 0.6); /* Cyan glow for interactive elements */
-}
-
-/* === Global Reset & Base === */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-html {
-    scroll-behavior: smooth;
-}
-
-body {
-    min-height: 100vh;
-    background: #0a0515; /* Dark retro space background */
-    /* Optional: Add a subtle static noise background to the body */
-    /* background-image: url('your-static-noise.png'); */
-    background-size: var(--gradient-size) var(--gradient-size);
-    /* animation: gradient-bg 25s ease infinite; -> Can be too distracting with scanlines */
-    font-family: var(--font-family-retro-body), var(--font-family-fallback);
-    color: var(--text-color-body);
-    line-height: 1.6;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding-top: 5vh;
-    padding-bottom: 5vh;
-    /* Add subtle overall flicker for CRT effect - can be performance intensive */
-    /* animation: crtFlicker 0.15s infinite alternate; */
-}
-/*
-@keyframes crtFlicker {
-    0% { opacity: 0.98; }
-    100% { opacity: 1; }
-} */
-
-/* === Animated Background (If you want to keep it but make it darker) === */
-@keyframes gradient-bg {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* === Main Glass Panel (Todo Container) === */
-.glass-panel {
-    width: 100%;
-    max-width: 650px; /* Slightly wider for retro feel */
-    margin-left: 1rem;
-    margin-right: 1rem;
-    background: var(--glass-bg);
-    backdrop-filter: blur(var(--blur-amount));
-    -webkit-backdrop-filter: blur(var(--blur-amount));
-    border-radius: var(--border-radius-main);
-    border: 2px solid var(--glass-border-color); /* Thicker, more pronounced border */
-    border-top-color: var(--glass-highlight-border);
-    border-left-color: var(--glass-highlight-border);
-    box-shadow: 0 0 15px rgba(var(--text-color-accent-rgb), 0.1), /* Subtle white glow */
-                0 0 30px var(--glass-border-color), /* Colored glow from border */
-                var(--shadow-medium);
-    padding: 2rem 2.5rem;
-    transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
-    position: relative; /* For scanline pseudo-element */
-    overflow: hidden; /* To contain scanlines and potential glow */
-}
-
-/* CRT Scanlines Overlay on the panel */
-.glass-panel::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image:
-        repeating-linear-gradient(
-            transparent,
-            transparent 3px, /* Space between lines */
-            var(--scanline-line-color) 3px,
-            var(--scanline-line-color) 4px  /* Thickness of lines */
-        );
-    opacity: var(--scanline-opacity);
-    pointer-events: none; /* Doesn't interfere with clicks */
-    z-index: 1; /* Above background, below content */
-    animation: scanline-scroll 20s linear infinite; /* Slow scroll */
-}
-
-@keyframes scanline-scroll {
-    0% { background-position-y: 0; }
-    100% { background-position-y: 100px; } /* Adjust for desired scroll speed/distance */
-}
-
-
-/* === Headings === */
-h1.animated-gradient { /* Your main "todos" title */
-    font-family: var(--font-family-retro-heading), var(--font-family-fallback);
-    font-size: 3.5rem; /* Larger for retro title */
-    font-weight: normal; /* Pixel fonts often don't need bold */
-    margin-bottom: 2.5rem;
-    text-align: center;
-    color: var(--text-color-heading-retro);
-    text-shadow: 0 0 5px var(--text-color-heading-retro),
-                 0 0 10px var(--text-color-heading-retro),
-                 0 0 15px rgba(0,255,204,0.7), /* Brighter part of glow */
-                 2px 2px 2px rgba(0,0,0,0.5); /* Drop shadow for depth */
-    /* Removing background clip for solid neon text */
-    -webkit-background-clip: unset;
-    background-clip: unset;
-    -webkit-text-fill-color: unset;
-    background: none; /* Override previous gradient text style */
-    animation: none; /* Override previous animations */
-    letter-spacing: 2px;
-}
-
-
-/* === Todo Header (Input & Add Button) === */
-.new-todo {
-    background: rgba(0, 0, 0, 0.2); /* Darker input */
-    border: 1px solid var(--glass-border-color);
-    border-radius: var(--border-radius-item);
-    color: var(--text-color-accent);
-    font-family: var(--font-family-retro-body), var(--font-family-fallback);
-    font-size: 1.1rem; /* Slightly larger text */
-    outline: none;
-    transition: background var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
-    padding: 0.9rem 1.3rem; /* Ensure consistent padding */
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.3); /* Inner shadow for depth */
-}
-
-.new-todo::placeholder {
-    color: var(--text-color-muted);
-    opacity: 0.8;
-}
-
-.new-todo:focus {
-    background: rgba(0, 0, 0, 0.3);
-    box-shadow: inset 0 0 8px rgba(0,0,0,0.4), /* Deeper inner shadow */
-                0 0 10px var(--glow-color-interactive), /* Outer glow */
-                0 0 5px var(--glow-color-interactive);
-    border-color: var(--glass-highlight-border);
-}
-
-/* === General Button Styles (Base for .btn) === */
-.btn {
-    border-radius: var(--border-radius-item);
-    border: 1px solid var(--glass-border-color);
-    cursor: pointer;
-    font-weight: normal; /* Retro fonts often look better normal */
-    font-family: var(--font-family-retro-body), var(--font-family-fallback);
-    font-size: 1rem;
-    transition: all var(--transition-speed) ease;
-    background: rgba(var(--text-color-accent-rgb), 0.05); /* Very subtle glass */
-    backdrop-filter: blur(2px); /* Lighter blur for buttons */
-    -webkit-backdrop-filter: blur(2px);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3), /* Base shadow */
-                inset 0 1px 0 rgba(var(--text-color-accent-rgb), 0.1); /* Inner highlight */
-    color: var(--text-color-accent);
-    padding: 0.8rem 1.5rem; /* Ensure padding is defined */
-    text-align: center;
-    text-transform: uppercase; /* Classic retro button text */
-    letter-spacing: 1px;
-}
-
-.btn:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.4),
-                inset 0 1px 0 rgba(var(--text-color-accent-rgb), 0.2),
-                0 0 10px var(--glow-color-interactive); /* Glow on hover */
-    background: rgba(var(--text-color-accent-rgb), 0.1);
-    border-color: var(--glass-highlight-border);
-}
-
-.btn:active {
-    transform: translateY(0px) scale(1);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.5), inset 0 1px 3px rgba(0,0,0,0.2);
-    background: rgba(0,0,0, 0.1);
-}
-
-/* Primary Add Task Button */
-.btn.add-task {
-     background: linear-gradient(135deg, var(--delete-color), var(--edit-icon-color)); /* Retro gradient */
-     background-size: 200% 200%;
-     animation: gradient-bg 8s ease infinite alternate;
-     color: white;
-     border-color: var(--glass-highlight-border);
-     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-}
-.btn.add-task:hover {
-      box-shadow: 0 6px 15px rgba(0,0,0,0.3),
-                  0 0 15px var(--delete-color), /* Glow with first gradient color */
-                  inset 0 1px 0 rgba(var(--text-color-accent-rgb), 0.2);
-      background-position: right center;
-      transform: translateY(-2px) scale(1.02);
-}
-
-
-/* === Todo Body & Items === */
-.todo-body {
-    margin-top: 1.5rem;
-    max-height: 45vh;
-    overflow-y: auto;
-    padding-right: 0.8rem; /* More space for scrollbar */
-    /* Custom Scrollbar Styling */
-}
-.todo-body::-webkit-scrollbar { width: 10px; }
-.todo-body::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 5px; }
-.todo-body::-webkit-scrollbar-thumb {
-    background: var(--glass-border-color);
-    border-radius: 5px;
-    border: 1px solid rgba(0,0,0,0.3);
-}
-.todo-body::-webkit-scrollbar-thumb:hover { background: var(--glass-highlight-border); }
-
-.todo-item {
-    background: rgba(0, 0, 0, 0.15); /* Darker item background */
-    border-radius: var(--border-radius-item);
-    padding: 0.9rem 1.3rem;
-    margin-bottom: 0.8rem;
-    border: 1px solid rgba(var(--text-color-accent-rgb), 0.1);
-    transition: background var(--transition-speed) ease,
-                transform var(--transition-speed) ease,
-                border-color var(--transition-speed) ease,
-                box-shadow var(--transition-speed) ease,
-                opacity 0.4s ease-out, max-height 0.4s ease-out,
-                padding 0.4s ease-out, margin 0.4s ease-out;
-    opacity: 1;
-    max-height: 100px;
-    overflow: hidden;
-    animation: itemFadeIn 0.4s ease forwards;
-    color: var(--text-color-accent);
-    font-size: 1.05rem; /* Slightly larger item text */
-    box-shadow: 0 1px 2px rgba(0,0,0,0.3), inset 0 0 3px rgba(0,0,0,0.1);
-}
-
-.todo-item:hover {
-    background: rgba(0, 0, 0, 0.25);
-    transform: scale(1.01); /* More subtle scale */
-    border-color: var(--glass-border-color);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.4),
-                0 0 8px var(--glow-color-interactive); /* Glow on item hover */
-}
-
-/* Todo Item Text Span (the label) */
-.todo-item span {
-    cursor: pointer;
-    transition: color var(--transition-speed) ease, text-decoration var(--transition-speed) ease, text-shadow 0.2s ease;
-    position: relative;
-    padding-left: 2.2rem; /* More space for retro checkbox */
-    user-select: none;
-    text-shadow: 1px 1px 1px rgba(0,0,0,0.4); /* Subtle depth to text */
-}
-.todo-item span:hover {
-    text-shadow: 1px 1px 1px rgba(0,0,0,0.4), 0 0 5px rgba(var(--text-color-accent-rgb), 0.5); /* Text glow on hover */
-}
-
-/* Custom Checkbox Styling (Retro) */
-.todo-item span::before { /* Square checkbox */
-    content: '';
-    position: absolute;
-    left: 0.3rem; /* Align with text */
-    top: 50%;
-    transform: translateY(-50%);
-    width: 18px;
-    height: 18px;
-    border: 2px solid var(--glass-border-color);
-    border-radius: 3px; /* Slightly rounded square */
-    background: rgba(0,0,0, 0.2);
-    transition: background var(--transition-speed) ease, border-color var(--transition-speed) ease, box-shadow 0.2s ease;
-    box-shadow: inset 0 0 3px rgba(0,0,0,0.3);
-}
-.todo-item span:hover::before {
-    border-color: var(--glass-highlight-border);
-    box-shadow: inset 0 0 3px rgba(0,0,0,0.3), 0 0 5px var(--glow-color-interactive);
-}
-.todo-item span::after { /* Checkmark (neon) */
-    content: '✓'; /* Using a unicode checkmark */
-    font-family: var(--font-family-retro-body); /* Ensure checkmark font */
-    font-size: 18px; /* Size of checkmark */
-    font-weight: bold;
-    position: absolute;
-    left: 0.5rem; /* Position inside checkbox */
-    top: 50%;
-    line-height: 1;
-    color: var(--text-color-heading-retro); /* Neon checkmark */
-    text-shadow: 0 0 3px var(--text-color-heading-retro);
-    transform: translateY(-50%) scale(0);
-    opacity: 0;
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease; /* Bouncy transition */
-}
-
-/* Completed State Styling */
-.todo-item span.completed {
-    color: var(--text-color-muted);
-    text-decoration: line-through;
-    text-decoration-color: var(--delete-color); /* Line-through with neon color */
-    opacity: 0.7;
-}
-.todo-item span.completed::before {
-    background: var(--text-color-heading-retro);
-    border-color: var(--text-color-heading-retro);
-    box-shadow: inset 0 0 3px rgba(0,0,0,0.5), 0 0 5px var(--text-color-heading-retro);
-}
-.todo-item span.completed::after {
-     opacity: 1;
-     transform: translateY(-50%) scale(1);
-}
-
-/* Styling for the inline edit input field */
-.todo-item .edit-input {
-    padding: 0.5rem 0.8rem;
-    margin-right: 0.5rem;
-    border: 1px solid var(--glass-border-color);
-    border-radius: var(--border-radius-item);
-    background: rgba(0, 0, 0, 0.3);
-    color: var(--text-color-accent);
-    font-family: var(--font-family-retro-body), var(--font-family-fallback);
-    font-size: 1rem;
-    outline: none;
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.4);
-}
-.todo-item .edit-input:focus {
-    background: rgba(0, 0, 0, 0.4);
-    border-color: var(--glass-highlight-border);
-    box-shadow: inset 0 0 8px rgba(0,0,0,0.5), 0 0 10px var(--glow-color-interactive);
-}
-
-/* Action Buttons (Edit/Delete) */
-.todo-item .edit-btn,
-.todo-item .delete-btn {
-    background: none; border: none; box-shadow: none; backdrop-filter: none;
-    padding: 0.2rem 0.4rem;
-    cursor: pointer;
-    font-size: 1.5rem; /* Icons slightly larger */
-    line-height: 1;
-    opacity: 0.7;
-    transition: color var(--transition-speed) ease, transform var(--transition-speed) ease, opacity var(--transition-speed) ease, text-shadow 0.2s ease;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-}
-.todo-item .todo-actions button + button { margin-left: 0.6rem; }
-
-.todo-item .edit-btn:hover,
-.todo-item .delete-btn:hover {
-    transform: scale(1.25); /* Larger pop */
-    opacity: 1;
-}
-
-.todo-item .edit-btn { color: var(--edit-icon-color); }
-.todo-item .edit-btn:hover {
-    color: var(--edit-icon-color-hover);
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5), 0 0 8px var(--edit-icon-color);
-}
-
-.todo-item .delete-btn { color: var(--delete-color); }
-.todo-item .delete-btn:hover {
-    color: var(--delete-color-hover);
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.5), 0 0 8px var(--delete-color);
-}
-
-
-/* === Todo Footer === */
-.todo-footer {
-    padding-top: 1.5rem;
-    margin-top: 1.5rem; /* More spacing */
-    border-top: 2px dashed var(--glass-border-color); /* Dashed retro border */
-    color: var(--text-color-muted);
-    font-size: 0.95rem;
-    text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
-}
-/* Footer filter buttons (styled by getButtonClass in JS, but can have base retro touch) */
-.todo-footer .btn { /* Assuming filter buttons have .btn class from JSX */
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border-width: 1px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 rgba(var(--text-color-accent-rgb),0.05);
-}
-.todo-footer .btn.bg-white\/30 { /* Example target for active button from getButtonClass output */
-    background: rgba(var(--text-color-accent-rgb), 0.2) !important; /* Stronger active state */
-    border-color: var(--glass-highlight-border) !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.4), inset 0 0 5px rgba(0,0,0,0.2), 0 0 8px var(--glow-color-interactive) !important;
-    color: var(--text-color-accent) !important;
-}
-.todo-footer button[disabled] {
-    opacity: 0.4 !important;
-    cursor: not-allowed !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 rgba(var(--text-color-accent-rgb),0.05) !important;
-}
-
-
-/* === Utility & Empty State === */
-.empty-list-message {
-    text-align: center;
-    color: var(--text-color-accent);
-    opacity: 0.7;
-    padding: 2.5rem 0;
-    font-style: normal; /* No italic for retro */
-    font-size: 1.1rem;
-    text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
-    letter-spacing: 1px;
-}
-
-/* Loading state */
-.glass-panel.text-center.p-5.text-white { /* Targeting the loading div from JSX */
-    font-family: var(--font-family-retro-heading), var(--font-family-fallback);
-    font-size: 1.5rem;
-    color: var(--text-color-heading-retro);
-    text-shadow: 0 0 5px var(--text-color-heading-retro), 0 0 10px var(--text-color-heading-retro);
-    letter-spacing: 1px;
-}
-
-/* === Base Variables === */
-:root {
-    /* ... (keep all existing variables from the working retro version) ... */
     --blur-amount: 10px;
     --border-radius-main: 18px;
     --border-radius-item: 10px;
@@ -469,10 +11,10 @@ h1.animated-gradient { /* Your main "todos" title */
     --primary-gradient: linear-gradient(135deg, #ff6b6b, #4ecdc4, #f7931a, #a06bff);
     --gradient-size: 400%;
     --text-color-body: #e0e0e0;
-    --text-color-heading-retro: #00ffcc;
+    --text-color-heading-retro: #00ffcc; /* Neon teal */
     --text-color-accent: #ffffff;
     --text-color-accent-rgb: 255, 255, 255;
-    --text-color-muted: #9a9aef;
+    --text-color-muted: #9a9aef; /* Muted retro purple/blue */
     --delete-color: #ff55a3;
     --delete-color-hover: #ff007f;
     --edit-icon-color: #00f2ff;
@@ -487,6 +29,11 @@ h1.animated-gradient { /* Your main "todos" title */
     --scanline-line-color: rgba(0, 0, 0, 0.25);
     --scanline-opacity: 0.6;
     --glow-color-interactive: rgba(0, 200, 255, 0.6);
+
+    /* --- New variables for Retro Footer --- */
+    --retro-border: var(--glass-highlight-border); /* Or e.g., #00ffcc */
+    --retro-text-secondary: var(--text-color-muted); /* Or e.g., #aabbcc */
+    --retro-text: var(--text-color-heading-retro); /* Or e.g., #00dd00 */
 }
 
 /* === Global Reset & Base === */
@@ -498,7 +45,7 @@ h1.animated-gradient { /* Your main "todos" title */
 
 html {
     scroll-behavior: smooth;
-    font-size: 16px; /* Base font size for easier rem calculations */
+    font-size: 16px;
 }
 
 body {
@@ -508,18 +55,28 @@ body {
     font-family: var(--font-family-retro-body), var(--font-family-fallback);
     color: var(--text-color-body);
     line-height: 1.6;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 3vh 1rem; /* Adjusted padding for smaller screens, added horizontal */
+    display: flex; /* Keep flex for Home.jsx's app-wrapper if needed, or set by app-wrapper */
+    flex-direction: column; /* Ensure body itself supports flex-col for app-wrapper */
+    padding-bottom: 80px;
 }
 
+.app-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+.app-wrapper > main {
+    flex-grow: 1;
+} */
+
+
 /* === Main Glass Panel (Todo Container) === */
+
 .glass-panel {
     width: 100%;
-    max-width: 700px; /* Slightly wider for more breathing room, but responsive */
-    margin-left: auto; /* Centering with auto margins */
-    margin-right: auto; /* Centering with auto margins */
+    max-width: 700px; 
+    margin-left: auto; 
+    margin-right: auto; 
     background: var(--glass-bg);
     backdrop-filter: blur(var(--blur-amount));
     -webkit-backdrop-filter: blur(var(--blur-amount));
@@ -530,13 +87,12 @@ body {
     box-shadow: 0 0 15px rgba(var(--text-color-accent-rgb), 0.1),
                 0 0 30px var(--glass-border-color),
                 var(--shadow-medium);
-    padding: 1.5rem 2rem; /* Adjusted padding for more internal space */
+    padding: 1.5rem 2rem; 
     transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
     position: relative;
     overflow: hidden;
 }
 
-/* CRT Scanlines Overlay - unchanged */
 .glass-panel::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
     background-image: repeating-linear-gradient(transparent, transparent 3px, var(--scanline-line-color) 3px, var(--scanline-line-color) 4px);
@@ -545,28 +101,29 @@ body {
 }
 @keyframes scanline-scroll { 0% { background-position-y: 0; } 100% { background-position-y: 100px; } }
 
+
 /* === Headings === */
+
 h1.animated-gradient {
     font-family: var(--font-family-retro-heading), var(--font-family-fallback);
-    font-size: 3rem; /* Slightly adjusted for responsiveness */
+    font-size: 3rem; 
     font-weight: normal;
-    margin-bottom: 2rem; /* More space below title */
+    margin-bottom: 2rem; 
     text-align: center;
     color: var(--text-color-heading-retro);
     text-shadow: 0 0 5px var(--text-color-heading-retro), 0 0 10px var(--text-color-heading-retro), 0 0 15px rgba(0,255,204,0.7), 2px 2px 2px rgba(0,0,0,0.5);
     -webkit-background-clip: unset; background-clip: unset; -webkit-text-fill-color: unset;
     background: none; animation: none; letter-spacing: 2px;
-    line-height: 1.2; /* Ensure line height is good for multi-line potential */
+    line-height: 1.2; 
 }
+
 
 /* === Todo Header (Input & Add Button) === */
-.todo-header { /* This class is on the <header> in TodoHeader.jsx */
-    /* display: flex; is likely handled by Bootstrap/utility classes from JSX */
-    /* gap: 0.8rem; -> from JSX */
-    margin-bottom: 2rem; /* More space after header */
+.todo-header {
+    margin-bottom: 2rem;
 }
 
-.new-todo { /* Assuming this is the input field itself */
+.new-todo { /* Input field */
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid var(--glass-border-color);
     border-radius: var(--border-radius-item);
@@ -575,11 +132,9 @@ h1.animated-gradient {
     font-size: 1.1rem;
     outline: none;
     transition: background var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
-    /* padding: 0.9rem 1.3rem; -> Is this coming from Bootstrap p-3 on the input? */
-    /* If not, explicitly set it: */
-    padding: 0.8rem 1.2rem; /* Adjusted input padding */
+
     box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
-    width: 100%; /* Ensure it takes available width if flex-grow is used on parent */
+    width: 100%; /* If using flex-grow on input itself */
 }
 
 .new-todo::placeholder {
@@ -588,7 +143,6 @@ h1.animated-gradient {
 }
 
 .new-todo:focus {
-    /* ... (focus styles unchanged) ... */
     background: rgba(0, 0, 0, 0.3);
     box-shadow: inset 0 0 8px rgba(0,0,0,0.4), 0 0 10px var(--glow-color-interactive), 0 0 5px var(--glow-color-interactive);
     border-color: var(--glass-highlight-border);
@@ -596,13 +150,12 @@ h1.animated-gradient {
 
 /* === General Button Styles (Base for .btn) === */
 .btn {
-    /* ... (font, transition, background, backdrop-filter, base color, text-align, text-transform, letter-spacing unchanged) ... */
     border-radius: var(--border-radius-item);
     border: 1px solid var(--glass-border-color);
     cursor: pointer;
     font-weight: normal;
     font-family: var(--font-family-retro-body), var(--font-family-fallback);
-    font-size: 1rem;
+    font-size: 1rem; /* Base font size for buttons */
     transition: all var(--transition-speed) ease;
     background: rgba(var(--text-color-accent-rgb), 0.05);
     backdrop-filter: blur(2px);
@@ -612,13 +165,13 @@ h1.animated-gradient {
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 1px;
-    padding: 0.75rem 1.5rem; /* INCREASED PADDING for all general buttons */
-    line-height: 1.5; /* Ensure text within button has space */
-    min-width: 120px; /* Give buttons a minimum width */
+
+    padding: 0.8rem 1.5rem; 
+    line-height: 1.5; 
 }
 
+
 .btn:hover {
-    /* ... (hover styles unchanged) ... */
     transform: translateY(-2px) scale(1.02);
     box-shadow: 0 4px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(var(--text-color-accent-rgb), 0.2), 0 0 10px var(--glow-color-interactive);
     background: rgba(var(--text-color-accent-rgb), 0.1);
@@ -626,39 +179,42 @@ h1.animated-gradient {
 }
 
 .btn:active {
-    /* ... (active styles unchanged) ... */
     transform: translateY(0px) scale(1);
     box-shadow: 0 1px 3px rgba(0,0,0,0.5), inset 0 1px 3px rgba(0,0,0,0.2);
     background: rgba(0,0,0, 0.1);
 }
 
 /* Primary Add Task Button */
-.btn.add-task { /* This specific button gets its padding from .btn base */
-    /* ... (background, animation, color, border-color, text-shadow unchanged) ... */
+.btn.add-task {
     background: linear-gradient(135deg, var(--delete-color), var(--edit-icon-color));
     background-size: 200% 200%;
     animation: gradient-bg 8s ease infinite alternate;
     color: white;
     border-color: var(--glass-highlight-border);
     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-    /* flex-shrink: 0; /* If it's in a flex container and you don't want it to shrink */
+    padding-top: 0.95rem;    
+    padding-bottom: 0.95rem; 
+
 }
+
 .btn.add-task:hover {
-    /* ... (hover styles for add-task unchanged) ... */
-    box-shadow: 0 6px 15px rgba(0,0,0,0.3), 0 0 15px var(--delete-color), inset 0 1px 0 rgba(var(--text-color-accent-rgb), 0.2);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.3),
+                0 0 15px var(--delete-color),
+                inset 0 1px 0 rgba(var(--text-color-accent-rgb), 0.2);
     background-position: right center;
     transform: translateY(-2px) scale(1.02);
 }
 
+
 /* === Todo Body & Items === */
+
 .todo-body {
     margin-top: 1.5rem;
     max-height: 45vh;
     overflow-y: auto;
     padding-right: 0.8rem;
-    padding-left: 0.3rem; /* Add a little padding on the left of scrollable area too */
+    padding-left: 0.3rem; 
 }
-/* ... (scrollbar styles unchanged) ... */
 .todo-body::-webkit-scrollbar { width: 10px; }
 .todo-body::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 5px; }
 .todo-body::-webkit-scrollbar-thumb { background: var(--glass-border-color); border-radius: 5px; border: 1px solid rgba(0,0,0,0.3); }
@@ -668,84 +224,72 @@ h1.animated-gradient {
 .todo-item {
     background: rgba(0, 0, 0, 0.15);
     border-radius: var(--border-radius-item);
-    padding: 1rem 1.5rem; /* INCREASED PADDING for todo items */
-    margin-bottom: 1rem;  /* INCREASED MARGIN for todo items */
+    padding: 1rem 1.5rem; 
+    margin-bottom: 1rem;  
     border: 1px solid rgba(var(--text-color-accent-rgb), 0.1);
-    /* ... (transition, opacity, max-height, overflow, animation, color, font-size, box-shadow unchanged) ... */
-    opacity: 1; max-height: 120px; /* Slightly increase max-height for more padding */
+    opacity: 1; max-height: 120px; 
     overflow: hidden; animation: itemFadeIn 0.4s ease forwards;
     color: var(--text-color-accent); font-size: 1.05rem;
     box-shadow: 0 1px 2px rgba(0,0,0,0.3), inset 0 0 3px rgba(0,0,0,0.1);
-    display: flex; /* Ensure flex properties from JSX are respected if custom styles are needed */
+    display: flex; 
     align-items: center;
     justify-content: space-between;
 }
 
 .todo-item:hover {
-    /* ... (hover styles unchanged) ... */
     background: rgba(0, 0, 0, 0.25);
     transform: scale(1.01);
     border-color: var(--glass-border-color);
     box-shadow: 0 2px 5px rgba(0,0,0,0.4), 0 0 8px var(--glow-color-interactive);
 }
 
-/* Todo Item Text Span (the label) */
-.todo-item span { /* This is the task label text */
-    /* ... (cursor, transition, position, user-select, base text-shadow unchanged) ... */
+.todo-item span { 
     cursor: pointer;
     transition: color var(--transition-speed) ease, text-decoration var(--transition-speed) ease, text-shadow 0.2s ease;
     position: relative;
     user-select: none;
     text-shadow: 1px 1px 1px rgba(0,0,0,0.4);
-    padding-left: 2.5rem; /* INCREASED PADDING for checkbox */
-    margin-right: 1rem; /* Space between text and action buttons */
-    flex-grow: 1; /* Allows text to take available space */
-    min-width: 0; /* Important for flex items to allow shrinking and prevent overflow */
-    word-break: break-word; /* Allow long words to break to prevent overflow */
+    padding-left: 2.5rem; 
+    margin-right: 1rem; 
+    flex-grow: 1; 
+    min-width: 0; 
+    word-break: break-word; 
 }
 .todo-item span:hover {
-    /* ... (hover styles unchanged) ... */
     text-shadow: 1px 1px 1px rgba(0,0,0,0.4), 0 0 5px rgba(var(--text-color-accent-rgb), 0.5);
 }
 
-/* Custom Checkbox Styling (Retro) */
-.todo-item span::before { /* Square checkbox */
-    /* ... (content, position, transform, width, height, border, border-radius, background, transition, box-shadow unchanged) ... */
+.todo-item span::before { 
     content: ''; position: absolute;
-    left: 0.5rem; /* Adjusted position */
+    left: 0.5rem; 
     top: 50%; transform: translateY(-50%);
-    width: 20px; height: 20px; /* Slightly larger checkbox */
+    width: 20px; height: 20px; 
     border: 2px solid var(--glass-border-color); border-radius: 3px;
     background: rgba(0,0,0, 0.2);
     transition: background var(--transition-speed) ease, border-color var(--transition-speed) ease, box-shadow 0.2s ease;
     box-shadow: inset 0 0 3px rgba(0,0,0,0.3);
 }
-/* ... (checkbox :hover::before and ::after styles unchanged) ... */
 .todo-item span:hover::before {
     border-color: var(--glass-highlight-border);
     box-shadow: inset 0 0 3px rgba(0,0,0,0.3), 0 0 5px var(--glow-color-interactive);
 }
-.todo-item span::after { /* Checkmark (neon) */
+.todo-item span::after { 
     content: '✓'; font-family: var(--font-family-retro-body);
-    font-size: 20px; /* Adjusted for larger checkbox */
+    font-size: 20px; 
     font-weight: bold; position: absolute;
-    left: 0.7rem; /* Adjusted position */
+    left: 0.7rem; 
     top: 50%; line-height: 1;
     color: var(--text-color-heading-retro); text-shadow: 0 0 3px var(--text-color-heading-retro);
     transform: translateY(-50%) scale(0); opacity: 0;
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease;
 }
 
-
-/* Completed State Styling - unchanged */
 .todo-item span.completed { color: var(--text-color-muted); text-decoration: line-through; text-decoration-color: var(--delete-color); opacity: 0.7; }
 .todo-item span.completed::before { background: var(--text-color-heading-retro); border-color: var(--text-color-heading-retro); box-shadow: inset 0 0 3px rgba(0,0,0,0.5), 0 0 5px var(--text-color-heading-retro); }
 .todo-item span.completed::after { opacity: 1; transform: translateY(-50%) scale(1); }
 
-/* Styling for the inline edit input field */
 .todo-item .edit-input {
-    /* ... (padding, border, border-radius, background, color, font-family, font-size, outline, box-shadow unchanged) ... */
-    padding: 0.6rem 0.9rem; /* Increased padding */
+    padding: 0.6rem 0.9rem; 
     margin-right: 0.5rem;
     border: 1px solid var(--glass-border-color);
     border-radius: var(--border-radius-item);
@@ -755,35 +299,30 @@ h1.animated-gradient {
     font-size: 1rem;
     outline: none;
     box-shadow: inset 0 0 5px rgba(0,0,0,0.4);
-    flex-grow: 1; /* Allow it to take space */
-    min-width: 0; /* Allow shrinking */
+    flex-grow: 1; 
+    min-width: 0; 
 }
 .todo-item .edit-input:focus {
-    /* ... (focus styles unchanged) ... */
     background: rgba(0, 0, 0, 0.4);
     border-color: var(--glass-highlight-border);
     box-shadow: inset 0 0 8px rgba(0,0,0,0.5), 0 0 10px var(--glow-color-interactive);
 }
 
-
-/* Action Buttons (Edit/Delete) */
-.todo-item .todo-actions { /* The div container for buttons in TodoBody.jsx */
+.todo-item .todo-actions { 
     display: flex;
     align-items: center;
-    flex-shrink: 0; /* Prevent this container from shrinking */
+    flex-shrink: 0; 
 }
 
 .todo-item .edit-btn,
 .todo-item .delete-btn {
-    /* ... (background, border, box-shadow, backdrop-filter, cursor, font-size, line-height, opacity, transition, text-shadow unchanged) ... */
     background: none; border: none; box-shadow: none; backdrop-filter: none;
     cursor: pointer; font-size: 1.5rem; line-height: 1; opacity: 0.7;
     transition: color var(--transition-speed) ease, transform var(--transition-speed) ease, opacity var(--transition-speed) ease, text-shadow 0.2s ease;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-    padding: 0.3rem 0.6rem; /* INCREASED PADDING for icon buttons */
+    padding: 0.3rem 0.6rem; 
 }
-/* ... (spacing between action buttons and hover styles unchanged) ... */
-.todo-item .todo-actions button + button { margin-left: 0.8rem; /* Increased spacing */ }
+.todo-item .todo-actions button + button { margin-left: 0.8rem; }
 .todo-item .edit-btn:hover, .todo-item .delete-btn:hover { transform: scale(1.25); opacity: 1; }
 .todo-item .edit-btn { color: var(--edit-icon-color); }
 .todo-item .edit-btn:hover { color: var(--edit-icon-color-hover); text-shadow: 1px 1px 2px rgba(0,0,0,0.5), 0 0 8px var(--edit-icon-color); }
@@ -791,25 +330,21 @@ h1.animated-gradient {
 .todo-item .delete-btn:hover { color: var(--delete-color-hover); text-shadow: 1px 1px 2px rgba(0,0,0,0.5), 0 0 8px var(--delete-color); }
 
 
-/* === Todo Footer === */
+/* === Todo Footer (inside glass panel) === */
 .todo-footer {
     padding-top: 1.5rem;
-    margin-top: 2rem; /* Increased margin */
-    /* ... (border-top, color, font-size, text-shadow unchanged) ... */
+    margin-top: 2rem;
     border-top: 2px dashed var(--glass-border-color);
     color: var(--text-color-muted);
     font-size: 0.95rem;
     text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
 }
-/* Footer filter buttons (inheriting from .btn for padding) */
-.todo-footer .btn {
-    padding: 0.6rem 1.2rem; /* Override .btn base padding if needed for footer buttons */
+.todo-footer .btn { /* Filter buttons */
+    padding: 0.6rem 1.2rem;
     font-size: 0.9rem;
-    min-width: auto; /* Allow footer buttons to be smaller if text is short */
-    /* ... (text-transform, letter-spacing, border-width, box-shadow from .btn are fine) ... */
+    min-width: auto;
 }
-/* ... (active button and disabled button styles for footer unchanged) ... */
-.todo-footer .btn.bg-white\/30 {
+.todo-footer .btn.bg-white\/30 { /* Active filter button */
     background: rgba(var(--text-color-accent-rgb), 0.2) !important; border-color: var(--glass-highlight-border) !important;
     box-shadow: 0 1px 2px rgba(0,0,0,0.4), inset 0 0 5px rgba(0,0,0,0.2), 0 0 8px var(--glow-color-interactive) !important;
     color: var(--text-color-accent) !important;
@@ -822,14 +357,12 @@ h1.animated-gradient {
 
 /* === Utility & Empty State === */
 .empty-list-message {
-    /* ... (text-align, color, opacity, padding, font-style, font-size, text-shadow, letter-spacing unchanged) ... */
     text-align: center; color: var(--text-color-accent); opacity: 0.7;
     padding: 2.5rem 0; font-style: normal; font-size: 1.1rem;
     text-shadow: 1px 1px 1px rgba(0,0,0,0.3); letter-spacing: 1px;
 }
 
-/* Loading state - unchanged */
-.glass-panel.text-center.p-5.text-white {
+.glass-panel.text-center.p-5.text-white { /* Loading state */
     font-family: var(--font-family-retro-heading), var(--font-family-fallback);
     font-size: 1.5rem; color: var(--text-color-heading-retro);
     text-shadow: 0 0 5px var(--text-color-heading-retro), 0 0 10px var(--text-color-heading-retro);
@@ -837,93 +370,142 @@ h1.animated-gradient {
 }
 
 /* === Responsiveness === */
+
 @media (max-width: 768px) {
-    h1.animated-gradient {
-        font-size: 2.5rem; /* Smaller title on smaller screens */
-        margin-bottom: 1.5rem;
+    h1.animated-gradient { font-size: 2.5rem; margin-bottom: 1.5rem; }
+    .glass-panel { padding: 1.5rem 1.5rem; margin-top: 2vh; }
+    .new-todo { font-size: 1rem; /* padding: 0.7rem 1rem; Reconsider if Tailwind p-3 is used */ }
+    .btn { /* padding: 0.6rem 1rem; */ font-size: 0.9rem; } /* Base button padding adjusted */
+    .btn.add-task {
+
     }
-    .glass-panel {
-        padding: 1.5rem 1.5rem; /* Reduce panel padding */
-        margin-top: 2vh;
-        margin-bottom: 0.8rem;
-    }
-    .new-todo {
-        font-size: 1rem;
-        padding: 0.7rem 1rem;
-    }
-    .btn {
-        padding: 0.6rem 1rem; /* Reduce button padding */
-        font-size: 0.9rem;
-    }
-    .todo-item {
-        padding: 0.8rem 1rem; /* Reduce item padding */
-        font-size: 1rem;
-        margin-bottom: 0.8rem;
-    }
-    .todo-item span {
-        padding-left: 2rem; /* Adjust checkbox padding for smaller text */
-    }
-    .todo-item .edit-btn,
-    .todo-item .delete-btn {
-        font-size: 1.3rem;
-        padding: 0.2rem 0.4rem;
-    }
-    .todo-footer .btn {
-        padding: 0.5rem 0.8rem;
-        font-size: 0.85rem;
-    }
-    .todo-footer {
-        font-size: 0.9rem;
-    }
+    .todo-item { padding: 0.8rem 1rem; font-size: 1rem; margin-bottom: 0.8rem;}
+    .todo-item span { padding-left: 2rem; }
+    .todo-item .edit-btn, .todo-item .delete-btn { font-size: 1.3rem; padding: 0.2rem 0.4rem; }
+    .todo-footer .btn { padding: 0.5rem 0.8rem; font-size: 0.85rem; }
+    .todo-footer { font-size: 0.9rem; }
 }
 
 @media (max-width: 480px) {
-    body {
-        padding: 2vh 0.5rem; /* Even less horizontal padding on very small screens */
-        margin-bottom: 0.8rem;
-    }
-    .glass-panel {
-        padding: 1rem 1rem; /* Further reduce panel padding */
-        border-radius: calc(var(--border-radius-main) - 4px); /* Slightly smaller radius */
-    }
-    h1.animated-gradient {
-        font-size: 2rem;
-    }
-    .todo-header {
-        flex-direction: column; /* Stack input and button on small screens */
-        gap: 0.8rem; /* Maintain gap when stacked */
-        margin-bottom: 1.5rem;
-    }
-    .new-todo {
-       /* width: 100%; /* Already set */
-    }
-    .btn.add-task {
-        width: 100%; /* Make add task button full width */
-    }
-    .todo-item span {
-        padding-left: 1.8rem; /* Adjust checkbox padding */
-        margin-right: 0.5rem; /* Less space before actions */
-    }
-    .todo-item span::before { /* Checkbox itself */
-        width: 18px; height: 18px; left: 0.3rem;
-    }
-    .todo-item span::after { /* Checkmark */
-        font-size: 18px; left: 0.5rem;
-    }
-    .todo-footer .status-bar, /* Assuming .status-bar is the div with "items left" and "clear" */
-    .todo-footer .filter-buttons { /* The div with filter buttons */
+    body { padding-left: 0.5rem; padding-right: 0.5rem; }
+    .glass-panel { padding: 1rem 1rem; border-radius: calc(var(--border-radius-main) - 4px); }
+    h1.animated-gradient { font-size: 2rem; }
+    .todo-header { flex-direction: column; gap: 0.8rem; margin-bottom: 1.5rem; }
+    .btn.add-task { width: 100%; }
+    .todo-item span { padding-left: 1.8rem; margin-right: 0.5rem; }
+    .todo-item span::before { width: 18px; height: 18px; left: 0.3rem; }
+    .todo-item span::after { font-size: 18px; left: 0.5rem; }
+    
+    /* Adjustments for TodoFooter counts on small screens */
+    .todo-footer .flex.justify-between.items-center {
         flex-direction: column;
-        gap: 0.8rem;
-        align-items: stretch; /* Make items full width in column */
+        align-items: flex-start; 
+        gap: 0.5rem;
     }
-    .todo-footer .filter-buttons .btn {
-        width: 100%; /* Make filter buttons full width when stacked */
+    .todo-footer .flex.justify-between.items-center > button { /* Clear completed button */
+        align-self: flex-end; 
+        width: auto;
     }
-     .todo-footer span, /* "X items left" */
-     .todo-footer button:not(.btn) { /* "Clear completed" if it's not a .btn */
-        text-align: center;
-        display: block; /* Make them take full width */
-        width: 100%;
-        margin-bottom: 0.5rem;
+     .todo-footer .flex.justify-center.items-center { /* Filter buttons container */
+        flex-wrap: wrap; 
+    }
+}
+
+
+/* --- Retro Footer (New Styles) --- */
+.retro-footer {
+    background-color: rgba(5, 10, 20, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-top: 3px solid var(--retro-border);
+    padding: 20px 15px; /* Increased padding */
+    text-align: center;
+    font-family: 'VT323', monospace; 
+    font-size: 1rem; 
+    color: var(--retro-text-secondary);
+
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+    position: relative; 
+    z-index: 10;
+    width: 100%; /* Ensure it spans full width */
+}
+
+.retro-footer .footer-content {
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+    justify-content: center;
+    align-items: center;
+    gap: 15px 25px; 
+    margin-bottom: 10px; 
+}
+
+.retro-footer .footer-c64-line {
+    font-size: 0.85rem; /* Slightly larger */
+    opacity: 0.7;
+    color: var(--retro-text); 
+    letter-spacing: 0.5px;
+    margin-top: 10px; /* Space from content above */
+}
+
+.retro-heart {
+    color: #FF3333; 
+    text-shadow: 0 0 3px #FF3333, 0 0 5px #FF0000;
+    animation: pulseHeart 1.5s infinite ease-in-out;
+    display: inline-block; /* Prevents baseline shift */
+}
+
+@keyframes pulseHeart {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+.github-link-container {
+    display: inline-block; 
+}
+
+.github-icon-link {
+    display: inline-flex; 
+    align-items: center;
+    justify-content: center;
+    color: var(--retro-text-secondary);
+    font-size: 1.8rem; 
+    transition: transform 0.2s ease-out, text-shadow 0.3s ease-in-out, color 0.2s;
+    text-decoration: none;
+    padding: 5px; 
+}
+
+.github-icon-link:hover,
+.github-icon-link:focus {
+    color: #fff; 
+    transform: scale(1.25) rotate(-5deg); 
+    animation: rgbGlow 2s infinite linear alternate; /* Added alternate */
+    text-decoration: none; 
+}
+
+@keyframes rgbGlow {
+    0% { text-shadow: 0 0 5px #FF0000, 0 0 10px #FF0000, 0 0 15px #FF0000; } /* Red */
+    16% { text-shadow: 0 0 5px #FF7F00, 0 0 10px #FF7F00, 0 0 15px #FF7F00; } /* Orange */
+    33% { text-shadow: 0 0 5px #FFFF00, 0 0 10px #FFFF00, 0 0 15px #FFFF00; } /* Yellow */
+    50% { text-shadow: 0 0 5px #00FF00, 0 0 10px #00FF00, 0 0 15px #00FF00; } /* Green */
+    66% { text-shadow: 0 0 5px #0000FF, 0 0 10px #0000FF, 0 0 15px #0000FF; } /* Blue */
+    83% { text-shadow: 0 0 5px #4B0082, 0 0 10px #4B0082, 0 0 15px #4B0082; } /* Indigo */
+    100% { text-shadow: 0 0 5px #9400D3, 0 0 10px #9400D3, 0 0 15px #9400D3; } /* Violet */
+}
+
+/* FOR SNMALL SCREEN FORMATS */
+
+@media (max-width: 420px) { /* Target screens narrower than 420px, adjust as needed */
+    .retro-footer .footer-content {
+        flex-direction: column; /* Stack "Made with" and GitHub icon vertically */
+        gap: 10px; /* Reduce gap when stacked */
+    }
+
+    .retro-footer .footer-c64-line {
+        font-size: 0.7rem; /* Slightly smaller font for very narrow screens */
+        line-height: 1.4; 
+    }
+
+    .github-icon-link {
+        font-size: 1.6rem; 
     }
 }

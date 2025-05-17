@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 
-// Helper to format API errors (can be imported from a utility file if used in multiple places)
+// Standardized helper to format API errors (same logic as in Todo.jsx)
 const formatApiError = async (response, defaultMessage) => {
-    // ... (same as in TodoBody.jsx, or import if extracted)
     let errorDetail = defaultMessage || `HTTP error! status: ${response.status}`;
+    const errorText = await response.text();
     try {
-        const errorData = await response.json();
+        const errorData = JSON.parse(errorText);
         if (errorData.detail) {
             errorDetail += ` - ${errorData.detail}`;
         } else if (errorData.label && Array.isArray(errorData.label)) {
@@ -13,10 +13,18 @@ const formatApiError = async (response, defaultMessage) => {
         } else if (errorData.msg) {
             errorDetail += ` - ${errorData.msg}`;
         } else {
-            errorDetail += ` - ${JSON.stringify(errorData)}`;
+            if (errorDetail.endsWith(response.status.toString())) {
+                 errorDetail += ` - ${errorText}`;
+            } else if (!errorDetail.includes(errorText)) {
+                 errorDetail += ` - ${errorText}`;
+            }
         }
     } catch (e) {
-        errorDetail += ` (Could not parse error body as JSON)`;
+        if (errorDetail.endsWith(response.status.toString())) {
+            errorDetail += ` - ${errorText}`;
+        } else if (!errorDetail.includes(errorText)) {
+            errorDetail += ` - ${errorText}`;
+        }
     }
     return errorDetail;
 };
@@ -49,8 +57,16 @@ const TodoHeader = ({ setTodos, apiBaseUrl, username }) => {
 
             const addedTodo = await response.json();
             console.log('Todo added successfully on server:', addedTodo);
-            setTodos(prevTodos => [...prevTodos, addedTodo]);
-            setNewTodoLabel("");
+            // Ensure the addedTodo from server has an 'id' and other expected fields
+            // The API should return the full todo object including its 'id'
+            if (addedTodo && addedTodo.id) {
+                setTodos(prevTodos => [...prevTodos, addedTodo]);
+                setNewTodoLabel("");
+            } else {
+                // This case should ideally not happen if API is consistent
+                console.error("Added todo from server is missing ID or invalid:", addedTodo);
+                alert("Task was added but there was an issue updating the list. Please refresh.");
+            }
         } catch (error) {
             console.error('Error adding todo:', error);
             alert(error.message);
@@ -77,9 +93,9 @@ const TodoHeader = ({ setTodos, apiBaseUrl, username }) => {
                 disabled={isAdding}
             />
             <button
-                className="add-task btn btn-primary shrink-0" // Assuming btn, btn-primary, shrink-0 are styled
+                className="add-task btn btn-primary shrink-0"
                 onClick={addTask}
-                disabled={isAdding}
+                disabled={isAdding || !newTodoLabel.trim()} 
             >
                 {isAdding ? 'Adding...' : 'Add Task'}
             </button>

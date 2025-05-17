@@ -1,52 +1,52 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const TodoBody = ({ todos, setTodos, apiBaseUrl, username }) => {
-    const [editingId, setEditingId] = useState(null); // ID of the todo being edited
-    const [editText, setEditText] = useState("");     // Text for the todo being edited
-    const editInputRef = useRef(null); // Ref for the edit input field
+// Standardized helper to format API errors (same logic as in Todo.jsx)
+const formatApiError = async (response, defaultMessage) => {
+    let errorDetail = defaultMessage || `HTTP error! status: ${response.status}`;
+    const errorText = await response.text();
+    try {
+        const errorData = JSON.parse(errorText);
+        if (errorData.detail) {
+            errorDetail += ` - ${errorData.detail}`;
+        } else if (errorData.label && Array.isArray(errorData.label)) {
+            errorDetail += ` - Label: ${errorData.label.join(', ')}`;
+        } else if (errorData.msg) {
+            errorDetail += ` - ${errorData.msg}`;
+        } else {
+            if (errorDetail.endsWith(response.status.toString())) {
+                 errorDetail += ` - ${errorText}`;
+            } else if (!errorDetail.includes(errorText)) {
+                 errorDetail += ` - ${errorText}`;
+            }
+        }
+    } catch (e) {
+        if (errorDetail.endsWith(response.status.toString())) {
+            errorDetail += ` - ${errorText}`;
+        } else if (!errorDetail.includes(errorText)) {
+            errorDetail += ` - ${errorText}`;
+        }
+    }
+    return errorDetail;
+};
 
-    // Focus input when editingId changes
+const TodoBody = ({ todos, setTodos, apiBaseUrl, username }) => {
+    const [editingId, setEditingId] = useState(null);
+    const [editText, setEditText] = useState("");
+    const editInputRef = useRef(null);
+
     useEffect(() => {
         if (editingId !== null && editInputRef.current) {
             editInputRef.current.focus();
-            // Optional: select all text
-            // editInputRef.current.select();
+            
         }
     }, [editingId]);
 
-    // Helper to format API errors
-    const formatApiError = async (response, defaultMessage) => {
-        let errorDetail = defaultMessage || `HTTP error! status: ${response.status}`;
-        try {
-            const errorData = await response.json();
-            if (errorData.detail) {
-                errorDetail += ` - ${errorData.detail}`;
-            } else if (errorData.label && Array.isArray(errorData.label)) {
-                errorDetail += ` - Label: ${errorData.label.join(', ')}`;
-            } else if (errorData.msg) {
-                errorDetail += ` - ${errorData.msg}`;
-            } else {
-                // Fallback if .json() was successful but no known fields
-                errorDetail += ` - ${JSON.stringify(errorData)}`;
-            }
-        } catch (e) {
-            // If .json() fails, try .text() - but response might be consumed
-            // It's safer to get text() once if .json() is conditional
-            // For simplicity here, we assume if .json() fails, no more info.
-            // In robust scenarios, get response.text() first.
-            errorDetail += ` (Could not parse error body as JSON)`;
-        }
-        return errorDetail;
-    };
-
-
-    // Function to toggle the 'completed' status of a todo item
     const toggleComplete = async (id) => {
         const todoToUpdate = todos.find(todo => todo.id === id);
         if (!todoToUpdate) return;
 
         const newCompletedStatus = !todoToUpdate.is_done;
-        const originalStatus = todoToUpdate.is_done; // For revert
+        const originalTodo = { ...todoToUpdate }; // Store original for full revert if needed
 
         setTodos(prevTodos =>
             prevTodos.map(todo =>
@@ -59,35 +59,42 @@ const TodoBody = ({ todos, setTodos, apiBaseUrl, username }) => {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    label: todoToUpdate.label,
+                    label: todoToUpdate.label, // API requires full object for PUT
                     is_done: newCompletedStatus
                 }),
             });
             if (!response.ok) {
                 throw new Error(await formatApiError(response, `Failed to update task completion`));
             }
+            const updatedTodoFromServer = await response.json();
+            // Sync with server data to ensure consistency!!!!
+             setTodos(prevTodos =>
+                prevTodos.map(todo =>
+                    todo.id === id ? { ...updatedTodoFromServer } : todo
+                )
+            );
             console.log('Todo updated (completion) successfully on server.');
         } catch (error) {
             console.error('Error updating todo completion on server:', error);
             setTodos(prevTodos =>
                 prevTodos.map(todo =>
-                    todo.id === id ? { ...todo, is_done: originalStatus } : todo // Revert
+                    todo.id === id ? originalTodo : todo // Revert to original todo state
                 )
             );
             alert(error.message);
         }
     };
 
-    // Function to delete a todo item
     const deleteTodo = async (id) => {
-        const originalTodos = [...todos]; // For potential revert (though less common for delete)
-        setTodos(prevTodos => prevTodos.filter(todo => todo.id !== id)); // Optimistic UI update
+        const originalTodos = [...todos];
+        setTodos(prevTodos => prevTodos.filter(todo => todo.id !== id));
 
         try {
             const response = await fetch(`${apiBaseUrl}/todos/${id}`, {
                 method: 'DELETE',
             });
-            if (!response.ok && response.status !== 204) { // 204 No Content is success for DELETE
+          
+            if (!response.ok && response.status !== 204) {
                 throw new Error(await formatApiError(response, `Failed to delete task`));
             }
             console.log(`Todo ${id} deleted successfully.`);
@@ -98,14 +105,13 @@ const TodoBody = ({ todos, setTodos, apiBaseUrl, username }) => {
         }
     };
 
-    // --- Edit Functionality ---
     const handleEdit = (todo) => {
         setEditingId(todo.id);
         setEditText(todo.label);
     };
 
     const handleSaveEdit = async (id) => {
-        if (editingId !== id) return; // Ensure we are saving the correct item (e.g. blur event)
+        if (editingId !== id) return;
 
         const trimmedEditText = editText.trim();
         const todoToUpdate = todos.find(todo => todo.id === id);
@@ -115,30 +121,26 @@ const TodoBody = ({ todos, setTodos, apiBaseUrl, username }) => {
             return;
         }
         
-        // If the text is empty, revert to original or delete, depending on desired UX
-        // For now, if empty, revert and cancel edit.
         if (trimmedEditText === "") {
             alert("Task label cannot be empty. Edit cancelled.");
-            setEditingId(null); // Cancel edit
-            // No change to todos state, as label was not changed to empty
+            setEditingId(null);
+       
             return;
         }
         
-        // If label hasn't changed, just exit edit mode
         if (trimmedEditText === todoToUpdate.label) {
             setEditingId(null);
             return;
         }
 
-        const originalLabel = todoToUpdate.label;
+        const originalTodo = { ...todoToUpdate };
 
-        // Optimistic UI Update for label
         setTodos(prevTodos =>
             prevTodos.map(todo =>
                 todo.id === id ? { ...todo, label: trimmedEditText } : todo
             )
         );
-        setEditingId(null); // Exit editing mode
+        setEditingId(null);
 
         try {
             const response = await fetch(`${apiBaseUrl}/todos/${id}`, {
@@ -146,7 +148,7 @@ const TodoBody = ({ todos, setTodos, apiBaseUrl, username }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     label: trimmedEditText,
-                    is_done: todoToUpdate.is_done
+                    is_done: todoToUpdate.is_done 
                 }),
             });
             if (!response.ok) {
@@ -154,17 +156,17 @@ const TodoBody = ({ todos, setTodos, apiBaseUrl, username }) => {
             }
             const updatedTodoFromServer = await response.json();
             console.log('Todo label updated successfully on server:', updatedTodoFromServer);
-            // Sync with server data to ensure consistency (e.g. if server modifies label)
+            // Sync with server data
             setTodos(prevTodos =>
                 prevTodos.map(todo =>
-                    todo.id === id ? { ...todo, label: updatedTodoFromServer.label } : todo
+                    todo.id === id ? { ...updatedTodoFromServer } : todo
                 )
             );
         } catch (error) {
             console.error('Error updating todo label on server:', error);
             setTodos(prevTodos =>
                 prevTodos.map(todo =>
-                    todo.id === id ? { ...todo, label: originalLabel } : todo // Revert
+                    todo.id === id ? originalTodo : todo // Revert to original todo
                 )
             );
             alert(error.message);
@@ -173,7 +175,7 @@ const TodoBody = ({ todos, setTodos, apiBaseUrl, username }) => {
 
     const handleCancelEdit = () => {
         setEditingId(null);
-        setEditText("");
+      
     };
 
     const handleEditInputChange = (e) => {
@@ -187,6 +189,20 @@ const TodoBody = ({ todos, setTodos, apiBaseUrl, username }) => {
             handleCancelEdit();
         }
     };
+    
+    const handleBlur = (id) => {
+        // Check if still in editing mode for this item before saving
+    
+        if (editingId === id) {
+       
+            setTimeout(() => {
+                if (editingId === id) { // Double check after timeout
+                    handleSaveEdit(id);
+                }
+            }, 150); // Adjusted timeout slightly
+        }
+    };
+
 
     if (!Array.isArray(todos) || todos.length === 0) {
          return <p className="empty-list-message">No tasks here. Add one above!</p>;
@@ -206,8 +222,8 @@ const TodoBody = ({ todos, setTodos, apiBaseUrl, username }) => {
                             value={editText}
                             onChange={handleEditInputChange}
                             onKeyDown={(e) => handleEditKeyPress(e, todo.id)}
-                            onBlur={() => setTimeout(() => handleSaveEdit(todo.id), 100)} // Delay to allow other events like Enter
-                            className="edit-input flex-grow mr-2" // Ensure `edit-input` and utilities are styled
+                            onBlur={() => handleBlur(todo.id)} 
+                            className="edit-input flex-grow mr-2"
                         />
                     ) : (
                         <>
@@ -219,22 +235,22 @@ const TodoBody = ({ todos, setTodos, apiBaseUrl, username }) => {
                             >
                                 {todo.label}
                             </span>
-                            <div className="todo-actions"> {/* Container for action buttons */}
+                            <div className="todo-actions">
                                 <button
-                                    className="edit-btn" // Styled in glassmorphism.css
+                                    className="edit-btn"
                                     onClick={() => handleEdit(todo)}
                                     aria-label={`Edit task ${todo.label}`}
                                     title="Edit task"
                                 >
-                                    ✏️ {/* Edit icon */}
+                                    ✏️
                                 </button>
                                 <button
-                                    className="delete-btn" // Styled in glassmorphism.css
+                                    className="delete-btn"
                                     onClick={() => deleteTodo(todo.id)}
                                     aria-label={`Delete task ${todo.label}`}
                                     title="Delete task"
                                 >
-                                    🗑️ {/* Trashcan icon */}
+                                    🗑️
                                 </button>
                             </div>
                         </>
