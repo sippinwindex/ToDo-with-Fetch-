@@ -1,6 +1,5 @@
 See the live WebApp below!
 
-https://vercel.com/sippinwindexs-projects/to-do-with-api-fetch
-
+https://to-do-with-api-fetch.vercel.app/
 
 Simple Todo WebApp with API connection, hooks, fetch, pages, components, and stylings with React.
